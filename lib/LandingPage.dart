@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:kznutrition/TrackScreen.dart';
 
 class TrackPage extends StatelessWidget {
   const TrackPage({super.key});
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Track Page', style: TextStyle(color: Colors.white)));
+    return const TrackScreen();
   }
 }
 
