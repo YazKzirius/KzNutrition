@@ -31,7 +31,7 @@ class NutritionalInfoScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColours.background,
       appBar: AppBar(
-        title: Text(foodName),
+        title: Text(foodName, style: const TextStyle(color: AppColours.textPrimary)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColours.textSecondary),
@@ -67,7 +67,7 @@ class NutritionalInfoScreen extends StatelessWidget {
                         fontSize: 18, color: AppColours.textSecondary)),
                     const SizedBox(height: 8),
                     Text(calories.toString(), style: const TextStyle(
-                        fontSize: 48, fontWeight: FontWeight.bold)),
+                        fontSize: 48, fontWeight: FontWeight.bold, color: AppColours.textPrimary)),
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
