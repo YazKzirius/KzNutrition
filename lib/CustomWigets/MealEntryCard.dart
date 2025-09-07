@@ -20,7 +20,6 @@ class MealEntryCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- FIX: Wrapped the Column in Expanded ---
           // This allows the text to wrap and prevents overflow.
           Expanded(
             child: Column(

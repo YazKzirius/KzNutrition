@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:kznutrition/models/MealEntry.dart';
 import 'package:kznutrition/CameraScanner.dart';
 import 'package:kznutrition/NutritionalInfoScreen.dart';

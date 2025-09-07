@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kznutrition/TrackScreen.dart';
+import 'package:kznutrition/utils/AppColours.dart';
 
 class TrackPage extends StatelessWidget {
   const TrackPage({super.key});
@@ -95,8 +96,8 @@ class _LandingPageState extends State<LandingPage> {
 
         // --- Styling ---
         type: BottomNavigationBarType.fixed, // Ensures all labels are visible.
-        backgroundColor: Colors.white, // Equivalent to `?android:attr/windowBackground`.
-        selectedItemColor: Colors.deepPurple, // Color for the active tab's icon and label.
+        backgroundColor: AppColours.background, // Equivalent to `?android:attr/windowBackground`.
+        selectedItemColor: Colors.white, // Color for the active tab's icon and label.
         unselectedItemColor: Colors.grey.shade600, // Color for inactive tabs.
       ),
     );

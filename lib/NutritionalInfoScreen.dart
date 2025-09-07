@@ -47,7 +47,7 @@ class NutritionalInfoScreen extends StatelessWidget {
                 children: [
                   const Text("Estimated Calories", style: TextStyle(fontSize: 18, color: AppColours.textSecondary)),
                   const SizedBox(height: 8),
-                  Text(calories.toString(), style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
+                  Text(calories.toString(), style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: AppColours.textPrimary)),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -134,7 +134,7 @@ class _MacroWidget extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value != null ? '${value!.toStringAsFixed(0)}g' : '-',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColours.textPrimary),
         ),
       ],
     );
