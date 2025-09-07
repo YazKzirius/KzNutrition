@@ -141,12 +141,6 @@ class _TrackScreenState extends State<TrackScreen> {
             fontWeight: FontWeight.bold,
             color: AppColours.textPrimary)),
         actions: [
-          IconButton(
-            icon: const Icon(Symbols.add, color: AppColours.textPrimary,
-                size: 32,
-                weight: 600),
-            onPressed: () {},
-          ),
           const SizedBox(width: 8),
         ],
       ),

@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GeminiService {
-  final String _apiKey = 'AIzaSyBZN9i14HS9Fqn_vLxmp1q450_f_CFSAb8';
+  final String _apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
 
   Future<Map<String, dynamic>?> analyzeImage(File imageFile) async {
-    if (_apiKey == '') {
+    if (_apiKey.isEmpty) {
       print('ERROR: Please add your Gemini API Key to lib/services/gemini_service.dart');
       return null;
     }

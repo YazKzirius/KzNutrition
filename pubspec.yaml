@@ -46,6 +46,8 @@ dependencies:
   path: ^1.9.0
   intl: ^0.19.0 # For formatting dates
   image_picker: ^1.0.7
+  # Add this for secure key management
+  flutter_dotenv: ^5.1.0
 
 
 dev_dependencies:
@@ -71,6 +73,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
+  assets:
+    - .env
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
