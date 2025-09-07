@@ -4,10 +4,10 @@ class MealEntry {
   final DateTime timestamp;
   final int calories;
   final String? summary;
-  // --- NEW: Add macronutrient fields ---
   final double? protein;
   final double? carbs;
   final double? fat;
+  final String? imagePath;
 
   MealEntry({
     required this.mealType,
@@ -15,9 +15,9 @@ class MealEntry {
     required this.timestamp,
     required this.calories,
     this.summary,
-    // Add to constructor
     this.protein,
     this.carbs,
     this.fat,
+    this.imagePath,
   });
 }

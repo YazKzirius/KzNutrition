@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kznutrition/models/MealEntry.dart';
 import 'package:kznutrition/CustomWigets/MealEntryCard.dart';
+import 'package:kznutrition/utils/AppColours.dart';
 
 class MealGroup extends StatelessWidget {
   final String title;
@@ -25,9 +26,9 @@ class MealGroup extends StatelessWidget {
           textBaseline: TextBaseline.alphabetic,
           children: [
             Text(title,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColours.textSecondary)),
             Text('$totalCalories cal',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColours.textSecondary)),
           ],
         ),
         const SizedBox(height: 16),

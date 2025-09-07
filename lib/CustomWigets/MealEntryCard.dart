@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:kznutrition/models/MealEntry.dart';
 import 'package:kznutrition/utils/AppColours.dart';
+import 'package:intl/intl.dart';
+import 'dart:io';
 
 class MealEntryCard extends StatelessWidget {
   final MealEntry meal;
@@ -17,10 +18,24 @@ class MealEntryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.0),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        // Use CrossAxisAlignment.center to align items vertically in the middle
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // This allows the text to wrap and prevents overflow.
+          // --- 1. IMAGE THUMBNAIL (Conditional) ---
+          if (meal.imagePath != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12.0),
+                child: Image.file(
+                  File(meal.imagePath!),
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,7 +47,6 @@ class MealEntryCard extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                     color: AppColours.textPrimary,
                   ),
-                  // Optional: to prevent extremely long names from taking too much space
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -42,7 +56,6 @@ class MealEntryCard extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 14, color: AppColours.textSecondary),
                 ),
-                // --- NEW: Display nutritional info if available ---
                 if (meal.protein != null || meal.carbs != null || meal.fat != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
@@ -55,7 +68,11 @@ class MealEntryCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 16), // A little spacing
+
+          // A little spacing before the calories
+          const SizedBox(width: 16),
+
+          // --- 3. CALORIE COUNT ---
           Text(
             '${meal.calories} cal',
             style: const TextStyle(

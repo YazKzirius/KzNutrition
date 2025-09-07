@@ -40,7 +40,6 @@ class _TrackScreenState extends State<TrackScreen> {
       _lastAnalysisSummary = entry.summary;
     });
   }
-
   Future<void> _analyzeImageAndAddEntry(String imagePath) async {
     if (!mounted) return;
 
@@ -53,7 +52,6 @@ class _TrackScreenState extends State<TrackScreen> {
       Navigator.pop(context); // Close loading dialog
 
       if (analysis != null && mounted) {
-        // Helper to safely convert numbers from the JSON
         double? toDouble(dynamic value) {
           if (value is num) return value.toDouble();
           return null;
@@ -66,10 +64,10 @@ class _TrackScreenState extends State<TrackScreen> {
               foodName: analysis['foodName'] ?? 'Analyzed Food',
               calories: analysis['calories'] ?? 0,
               summary: analysis['summary'],
-              // Pass new data
               protein: toDouble(analysis['protein']),
               carbs: toDouble(analysis['carbs']),
               fat: toDouble(analysis['fat']),
+              imagePath: imagePath, // <-- NEW: Pass the imagePath here
             ),
           ),
         );
@@ -90,13 +88,14 @@ class _TrackScreenState extends State<TrackScreen> {
   Future<void> _showImageSourceActionSheet() async {
     showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
+      backgroundColor: AppColours.background,
+      builder: (BuildContextcontext) {
         return SafeArea(
           child: Wrap(
             children: <Widget>[
               ListTile(
-                leading: const Icon(Symbols.photo_camera),
-                title: const Text('Take Photo'),
+                leading: const Icon(Symbols.photo_camera, color: AppColours.textSecondary),
+                title: const Text('Take Photo', style: TextStyle(color: AppColours.textPrimary)),
                 onTap: () async {
                   Navigator.pop(context); // Close the bottom sheet
                   final String? imagePath = await Navigator.push<String>(
@@ -110,8 +109,8 @@ class _TrackScreenState extends State<TrackScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Symbols.collections),
-                title: const Text('Choose from Gallery'),
+                leading: const Icon(Symbols.collections, color: AppColours.textSecondary),
+                title: const Text('Choose from Gallery', style: TextStyle(color: AppColours.textPrimary)),
                 onTap: () async {
                   Navigator.pop(context); // Close the bottom sheet
                   final XFile? image = await _picker.pickImage(
@@ -137,9 +136,15 @@ class _TrackScreenState extends State<TrackScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
+        // This sets the color for all icons in the AppBar, including the automatic back button.
+        iconTheme: const IconThemeData(
+          color: AppColours.textSecondary,
+        ),
+
         title: const Text('Track', style: TextStyle(fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColours.textPrimary)),
+            color: AppColours.textPrimary)), // Your title color remains unchanged
+
         actions: [
           const SizedBox(width: 8),
         ],
@@ -160,7 +165,6 @@ class _TrackScreenState extends State<TrackScreen> {
               MealGroup(title: 'Today', meals: _todayMeals),
               const SizedBox(height: 16),
 
-              // --- NEW: Animated summary text widget ---
               AnimatedOpacity(
                 opacity: _lastAnalysisSummary != null ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 500),

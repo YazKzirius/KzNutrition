@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kznutrition/TrackScreen.dart';
 import 'package:kznutrition/utils/AppColours.dart';
+import 'package:kznutrition/GoalScreen.dart';
+import 'package:kznutrition/insightScreen.dart';
 
 class TrackPage extends StatelessWidget {
   const TrackPage({super.key});
@@ -14,7 +16,7 @@ class GoalsPage extends StatelessWidget {
   const GoalsPage({super.key});
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Goals Page', style: TextStyle(color: Colors.white)));
+    return const GoalsScreen();
   }
 }
 
@@ -22,7 +24,7 @@ class InsightsPage extends StatelessWidget {
   const InsightsPage({super.key});
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Insights Page', style: TextStyle(color: Colors.white)));
+    return const InsightsScreen();
   }
 }
 
