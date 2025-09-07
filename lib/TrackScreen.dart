@@ -1,11 +1,15 @@
-import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:openfoodfacts/openfoodfacts.dart';
+import 'package:kznutrition/models/MealEntry.dart';
+import 'package:kznutrition/CameraScanner.dart';
+import 'package:kznutrition/NutritionalInfoScreen.dart';
+import 'package:kznutrition/services/GeminiService.dart';
 import 'package:kznutrition/utils/AppColours.dart';
-import 'package:kznutrition/CustomWigets/MealEntryCard.dart';
+import 'package:kznutrition/CustomWigets/MealGroup.dart';
 import 'package:kznutrition/CustomWigets/ScanButton.dart';
-// Import your scanner screen if you have one
-// import 'package:kznutrition/screens/scanner_screen.dart';
 
 class TrackScreen extends StatefulWidget {
   const TrackScreen({super.key});
@@ -16,6 +20,12 @@ class TrackScreen extends StatefulWidget {
 
 class _TrackScreenState extends State<TrackScreen> {
   int _selectedIndex = 0;
+  final GeminiService _geminiService = GeminiService();
+  final ImagePicker _picker = ImagePicker(); // Instance of ImagePicker
+
+  final List<MealEntry> _todayMeals = [];
+  final List<MealEntry> _yesterdayMeals = [];
+  String? _lastAnalysisSummary; // State to hold the latest summary
 
   void _onItemTapped(int index) {
     setState(() {
@@ -23,106 +33,175 @@ class _TrackScreenState extends State<TrackScreen> {
     });
   }
 
-  void _scanBarcode() {
-    // Navigate to your barcode scanner page
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => const BarcodeScannerPage()));
-    print("Scan Barcode Tapped");
+  void _addMealEntry(MealEntry entry) {
+    setState(() {
+      _todayMeals.add(entry);
+      // If the new entry has a summary, update the state.
+      // If it doesn't (e.g., from a barcode), the summary disappears.
+      _lastAnalysisSummary = entry.summary;
+    });
   }
 
-  void _scanWithCamera() {
-    // Navigate to your camera analysis page
-    print("Scan Camera Tapped");
+  Future<void> _analyzeImageAndAddEntry(String imagePath) async {
+    if (!mounted) return;
+
+    showDialog(context: context, barrierDismissible: false, builder: (context) => const Center(child: CircularProgressIndicator()));
+
+    try {
+      final imageFile = File(imagePath);
+      final analysis = await _geminiService.analyzeImage(imageFile);
+
+      Navigator.pop(context); // Close loading dialog
+
+      if (analysis != null && mounted) {
+        // Helper to safely convert numbers from the JSON
+        double? toDouble(dynamic value) {
+          if (value is num) return value.toDouble();
+          return null;
+        }
+
+        final newEntry = await Navigator.push<MealEntry>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => NutritionalInfoScreen(
+              foodName: analysis['foodName'] ?? 'Analyzed Food',
+              calories: analysis['calories'] ?? 0,
+              summary: analysis['summary'],
+              // Pass new data
+              protein: toDouble(analysis['protein']),
+              carbs: toDouble(analysis['carbs']),
+              fat: toDouble(analysis['fat']),
+            ),
+          ),
+        );
+        if (newEntry != null) {
+          _addMealEntry(newEntry);
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not analyze image')),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      print("An error occurred during image analysis: $e");
+    }
   }
 
+  Future<void> _showImageSourceActionSheet() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Symbols.photo_camera),
+                title: const Text('Take Photo'),
+                onTap: () async {
+                  Navigator.pop(context); // Close the bottom sheet
+                  final String? imagePath = await Navigator.push<String>(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const CameraScannerScreen()),
+                  );
+                  if (imagePath != null) {
+                    _analyzeImageAndAddEntry(imagePath);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Symbols.collections),
+                title: const Text('Choose from Gallery'),
+                onTap: () async {
+                  Navigator.pop(context); // Close the bottom sheet
+                  final XFile? image = await _picker.pickImage(
+                      source: ImageSource.gallery);
+                  if (image != null) {
+                    _analyzeImageAndAddEntry(image.path);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: AppColours.background,
-        extendBody: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          centerTitle: true,
-          title: const Text('Track',
-              style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: AppColours.textPrimary)),
-          actions: [
-            IconButton(
-              icon: const Icon(
-                Symbols.add,
-                color: AppColours.textPrimary,
+      backgroundColor: AppColours.background,
+      extendBody: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text('Track', style: TextStyle(fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: AppColours.textPrimary)),
+        actions: [
+          IconButton(
+            icon: const Icon(Symbols.add, color: AppColours.textPrimary,
                 size: 32,
-                weight: 600,
-              ),
-              onPressed: () {},
-            ),
-            const SizedBox(width: 8),
-          ],
-        ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  style: const TextStyle(color: AppColours.textPrimary),
-                  decoration: InputDecoration(
-                    hintText: 'Search for food',
-                    hintStyle: const TextStyle(color: AppColours.textSecondary),
-                    prefixIcon:
-                    const Icon(Symbols.search, color: AppColours.textSecondary),
-                    filled: true,
-                    fillColor: AppColours.card,
-                    contentPadding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                      borderSide: const BorderSide(color: AppColours.border, width: 1.5),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ScanButton(
-                  icon: Symbols.barcode,
-                  text: 'Scan a barcode',
-                  onPressed: _scanBarcode,
-                ),
-                const SizedBox(height: 12),
-                ScanButton(
-                  icon: Symbols.photo_camera,
+                weight: 600),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // This button now calls the action sheet
+              ScanButton(icon: Symbols.photo_camera,
                   text: 'Scan camera',
-                  onPressed: _scanWithCamera,
-                ),
-                const SizedBox(height: 32),
-                const Text('Today',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                const MealEntryCard(mealType: 'Lunch', time: '12:00 PM', calories: '350'),
-                const SizedBox(height: 12),
-                const MealEntryCard(mealType: 'Dinner', time: '7:00 PM', calories: '600'),
-                const SizedBox(height: 12),
-                const MealEntryCard(mealType: 'Snack', time: '10:00 PM', calories: '150'),
-                const SizedBox(height: 32),
-                const Text('Yesterday',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                const MealEntryCard(mealType: 'Lunch', time: '12:00 PM', calories: '400'),
-                const SizedBox(height: 12),
-                const MealEntryCard(mealType: 'Dinner', time: '7:00 PM', calories: '650'),
-                const SizedBox(height: 12),
-                const MealEntryCard(mealType: 'Snack', time: '10:00 PM', calories: '200'),
-              ],
-            ),
+                  onPressed: _showImageSourceActionSheet),
+              const SizedBox(height: 32),
+
+              // Meal Groups...
+              MealGroup(title: 'Today', meals: _todayMeals),
+              const SizedBox(height: 16),
+
+              // --- NEW: Animated summary text widget ---
+              AnimatedOpacity(
+                opacity: _lastAnalysisSummary != null ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 500),
+                child: _lastAnalysisSummary != null
+                    ? Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColours.card,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                          Symbols.lightbulb, color: Colors.yellow, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _lastAnalysisSummary!,
+                          style: const TextStyle(
+                              color: AppColours.textSecondary, height: 1.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                    : const SizedBox.shrink(),
+              ),
+              const SizedBox(height: 32),
+              MealGroup(title: 'Yesterday', meals: _yesterdayMeals),
+            ],
           ),
         ),
+      ),
     );
   }
 }
