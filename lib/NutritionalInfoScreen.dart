@@ -34,6 +34,7 @@ class NutritionalInfoScreen extends StatelessWidget {
         title: Text(foodName),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: const IconThemeData(color: AppColours.textSecondary),
       ),
       body: SingleChildScrollView(
         child: Padding(
