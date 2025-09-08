@@ -42,7 +42,7 @@ dependencies:
   mobile_scanner: ^5.1.1 # Check pub.dev for the latest version
   openfoodfacts: ^3.1.0
   google_generative_ai: ^0.4.0 # For Gemini AI
-  path_provider: ^2.0.12
+  path_provider: ^2.1.2
   path: ^1.9.0
   intl: ^0.19.0 # For formatting dates
   image_picker: ^1.0.7

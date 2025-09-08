@@ -6,8 +6,16 @@ import 'package:kznutrition/utils/AppColours.dart';
 class MealGroup extends StatelessWidget {
   final String title;
   final List<MealEntry> meals;
+  final Function(MealEntry) onDeleteMeal;
+  final Function(MealEntry) onMealTap;
 
-  const MealGroup({super.key, required this.title, required this.meals});
+  const MealGroup({
+    super.key,
+    required this.title,
+    required this.meals,
+    required this.onDeleteMeal,
+    required this.onMealTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +46,11 @@ class MealGroup extends StatelessWidget {
           itemCount: meals.length,
           itemBuilder: (context, index) {
             final meal = meals[index];
-            return MealEntryCard(meal: meal);
+            return MealEntryCard(
+              meal: meal,
+              onDelete: () => onDeleteMeal(meal),
+              onTap: () => onMealTap(meal),
+            );
           },
           separatorBuilder: (context, index) => const SizedBox(height: 12),
         ),

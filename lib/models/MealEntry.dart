@@ -20,4 +20,27 @@ class MealEntry {
     this.fat,
     this.imagePath,
   });
+  Map<String, dynamic> toJson() => {
+    'mealType': mealType,
+    'foodName': foodName,
+    'timestamp': timestamp.toIso8601String(),
+    'calories': calories,
+    'summary': summary,
+    'protein': protein,
+    'carbs': carbs,
+    'fat': fat,
+    'imagePath': imagePath,
+  };
+
+  factory MealEntry.fromJson(Map<String, dynamic> json) => MealEntry(
+    mealType: json['mealType'],
+    foodName: json['foodName'],
+    timestamp: DateTime.parse(json['timestamp']),
+    calories: json['calories'],
+    summary: json['summary'],
+    protein: json['protein'],
+    carbs: json['carbs'],
+    fat: json['fat'],
+    imagePath: json['imagePath'],
+  );
 }

@@ -11,34 +11,81 @@ import 'package:kznutrition/CustomWigets/MealGroup.dart';
 import 'package:kznutrition/CustomWigets/ScanButton.dart';
 
 class TrackScreen extends StatefulWidget {
-  const TrackScreen({super.key});
+  final List<MealEntry> meals;
+  final Function(MealEntry) onAddMeal;
+  final Function(MealEntry) onDeleteMeal;
+
+  const TrackScreen({
+    super.key,
+    required this.meals,
+    required this.onAddMeal,
+    required this.onDeleteMeal,
+  });
 
   @override
   State<TrackScreen> createState() => _TrackScreenState();
 }
 
 class _TrackScreenState extends State<TrackScreen> {
-  int _selectedIndex = 0;
   final GeminiService _geminiService = GeminiService();
-  final ImagePicker _picker = ImagePicker(); // Instance of ImagePicker
+  final ImagePicker _picker = ImagePicker();
+  String? _lastAnalysisSummary;
 
-  final List<MealEntry> _todayMeals = [];
-  final List<MealEntry> _yesterdayMeals = [];
-  String? _lastAnalysisSummary; // State to hold the latest summary
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  List<MealEntry> get _todayMeals {
+    final now = DateTime.now();
+    return widget.meals.where((meal) =>
+    meal.timestamp.year == now.year &&
+        meal.timestamp.month == now.month &&
+        meal.timestamp.day == now.day
+    ).toList();
   }
 
+  List<MealEntry> get _yesterdayMeals {
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    return widget.meals.where((meal) =>
+    meal.timestamp.year == yesterday.year &&
+        meal.timestamp.month == yesterday.month &&
+        meal.timestamp.day == yesterday.day
+    ).toList();
+  }
+
+  void _showSummaryDialog(MealEntry meal) {
+    // We only show the dialog if it's a Gemini summary (has an image path)
+    if (meal.imagePath == null || meal.summary == null) {
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColours.card,
+        title: Text(meal.foodName, style: const TextStyle(color: AppColours.textPrimary)),
+        content: Text(
+          meal.summary!,
+          style: const TextStyle(color: AppColours.textSecondary, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Close'),
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColours.textPrimary,
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  // This function now calls the parent's onAddMeal callback
   void _addMealEntry(MealEntry entry) {
-    setState(() {
-      _todayMeals.add(entry);
-      // If the new entry has a summary, update the state.
-      // If it doesn't (e.g., from a barcode), the summary disappears.
-      _lastAnalysisSummary = entry.summary;
-    });
+    // This first line calls the parent to save the new meal to storage.
+    widget.onAddMeal(entry);
+    if (entry.imagePath != null) {
+      setState(() {
+        _lastAnalysisSummary = entry.summary;
+      });
+    }
   }
   Future<void> _analyzeImageAndAddEntry(String imagePath) async {
     if (!mounted) return;
@@ -49,7 +96,7 @@ class _TrackScreenState extends State<TrackScreen> {
       final imageFile = File(imagePath);
       final analysis = await _geminiService.analyzeImage(imageFile);
 
-      Navigator.pop(context); // Close loading dialog
+      Navigator.pop(context);
 
       if (analysis != null && mounted) {
         double? toDouble(dynamic value) {
@@ -67,7 +114,7 @@ class _TrackScreenState extends State<TrackScreen> {
               protein: toDouble(analysis['protein']),
               carbs: toDouble(analysis['carbs']),
               fat: toDouble(analysis['fat']),
-              imagePath: imagePath, // <-- NEW: Pass the imagePath here
+              imagePath: imagePath,
             ),
           ),
         );
@@ -126,7 +173,6 @@ class _TrackScreenState extends State<TrackScreen> {
       },
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -136,15 +182,12 @@ class _TrackScreenState extends State<TrackScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        // This sets the color for all icons in the AppBar, including the automatic back button.
         iconTheme: const IconThemeData(
           color: AppColours.textSecondary,
         ),
-
         title: const Text('Track', style: TextStyle(fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColours.textPrimary)), // Your title color remains unchanged
-
+            color: AppColours.textPrimary)),
         actions: [
           const SizedBox(width: 8),
         ],
@@ -155,14 +198,17 @@ class _TrackScreenState extends State<TrackScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // This button now calls the action sheet
               ScanButton(icon: Symbols.photo_camera,
                   text: 'Scan camera',
                   onPressed: _showImageSourceActionSheet),
               const SizedBox(height: 32),
 
-              // Meal Groups...
-              MealGroup(title: 'Today', meals: _todayMeals),
+              MealGroup(
+                title: 'Today',
+                meals: _todayMeals,
+                onDeleteMeal: widget.onDeleteMeal,
+                onMealTap: _showSummaryDialog,
+              ),
               const SizedBox(height: 16),
 
               AnimatedOpacity(
@@ -194,7 +240,13 @@ class _TrackScreenState extends State<TrackScreen> {
                     : const SizedBox.shrink(),
               ),
               const SizedBox(height: 32),
-              MealGroup(title: 'Yesterday', meals: _yesterdayMeals),
+
+              MealGroup(
+                title: 'Yesterday',
+                meals: _yesterdayMeals,
+                onDeleteMeal: widget.onDeleteMeal,
+                onMealTap: _showSummaryDialog,
+              ),
             ],
           ),
         ),

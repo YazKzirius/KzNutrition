@@ -7,7 +7,10 @@ import 'package:kznutrition/CustomWigets/HealthInsightCard.dart';
 import 'package:kznutrition/CustomWigets/RecommendationCard.dart';
 
 class InsightsScreen extends StatefulWidget {
-  const InsightsScreen({super.key});
+  final List<MealEntry> meals;
+  final Set<String> goals;
+
+  const InsightsScreen({super.key, required this.meals, required this.goals});
 
   @override
   State<InsightsScreen> createState() => _InsightsScreenState();
@@ -23,18 +26,20 @@ class _InsightsScreenState extends State<InsightsScreen> {
     _loadInsights();
   }
 
-  void _loadInsights() {
-    final List<MealEntry> dummyMeals = [
-      MealEntry(mealType: "Lunch", foodName: "Grilled Chicken Salad", timestamp: DateTime.now(), calories: 450, protein: 40, carbs: 10, fat: 25),
-      MealEntry(mealType: "Snack", foodName: "Apple", timestamp: DateTime.now(), calories: 95, carbs: 25),
-      MealEntry(mealType: "Dinner", foodName: "Salmon with Quinoa", timestamp: DateTime.now(), calories: 600, protein: 45, carbs: 50, fat: 28),
-    ];
-    final Set<String> dummyGoals = {'Memory Improvement', 'Stress Reduction'};
+  // When the screen is shown, if the data has changed, reload insights.
+  @override
+  void didUpdateWidget(covariant InsightsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.meals != oldWidget.meals || widget.goals != oldWidget.goals) {
+      _loadInsights();
+    }
+  }
 
+  void _loadInsights() {
     setState(() {
       _insightsFuture = _insightsService.fetchInsights(
-        meals: dummyMeals,
-        goals: dummyGoals,
+        meals: widget.meals,
+        goals: widget.goals,
       );
     });
   }
@@ -89,7 +94,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Your Health Insights', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                const Text('Your Health Insights', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColours.textPrimary)),
                 const SizedBox(height: 20),
                 HealthInsightCard(insight: insights['cognitive']!),
                 const SizedBox(height: 16),
@@ -97,7 +102,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 const SizedBox(height: 16),
                 HealthInsightCard(insight: insights['aging']!),
                 const SizedBox(height: 40),
-                const Text('Dietary Recommendations', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                const Text('Dietary Recommendations', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColours.textPrimary)),
                 const Text(
                   'Based on your tracked data, here are some recommendations to further enhance your well-being.',
                   style: TextStyle(color: AppColours.textSecondary, fontSize: 16, height: 1.5),
